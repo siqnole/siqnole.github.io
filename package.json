@@ -1,0 +1,12 @@
+{
+  "name": "siqnole-site",
+  "version": "1.0.0",
+  "description": "Portfolio site for William Commu",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

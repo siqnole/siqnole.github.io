@@ -59,6 +59,94 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
+// Spotify API helper functions
+let spotifyAccessToken = null;
+let spotifyTokenExpiry = 0;
+
+async function getSpotifyAccessToken() {
+  const currentTime = Date.now();
+  if (spotifyAccessToken && currentTime < spotifyTokenExpiry) {
+    return spotifyAccessToken;
+  }
+
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+  const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
+
+  if (!clientId || !clientSecret || !refreshToken) {
+    console.error("Missing Spotify credentials in .env");
+    return null;
+  }
+
+  try {
+    const response = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: "Basic " + Buffer.from(clientId + ":" + clientSecret).toString("base64"),
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      }),
+    });
+
+    const data = await response.json();
+    if (data.access_token) {
+      spotifyAccessToken = data.access_token;
+      spotifyTokenExpiry = currentTime + data.expires_in * 1000 - 60000; // Expire 1 minute early
+      return spotifyAccessToken;
+    }
+  } catch (error) {
+    console.error("Error refreshing Spotify token:", error);
+  }
+  return null;
+}
+
+// Spotify Now Playing Endpoint
+app.get("/api/now-playing", async (req, res) => {
+  const token = await getSpotifyAccessToken();
+  if (!token) {
+    return res.status(500).json({ error: "Failed to authenticate with Spotify." });
+  }
+
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 204 || response.status > 400) {
+      return res.status(200).json({ isPlaying: false });
+    }
+
+    const song = await response.json();
+    if (!song.track_window && !song.item) {
+        return res.status(200).json({ isPlaying: false });
+    }
+
+    const isPlaying = song.is_playing;
+    const title = song.item.name;
+    const artist = song.item.artists.map((_artist) => _artist.name).join(", ");
+    const album = song.item.album.name;
+    const albumImageUrl = song.item.album.images[0].url;
+    const songUrl = song.item.external_urls.spotify;
+
+    res.status(200).json({
+      album,
+      albumImageUrl,
+      artist,
+      isPlaying,
+      songUrl,
+      title,
+    });
+  } catch (error) {
+    console.error("Spotify API Error:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
 // Fallback to index.html for all requests (supports SPA routing)
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));

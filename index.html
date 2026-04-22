@@ -166,6 +166,41 @@
             font-style: italic;
         }
 
+        .hero-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2rem;
+            margin-bottom: 1.6rem;
+            max-width: 650px;
+        }
+
+        .hero-socials {
+            display: flex;
+            gap: 1.2rem;
+            opacity: 0;
+            animation: riseIn 0.7s ease forwards 0.35s;
+            padding-bottom: 0.8rem;
+        }
+
+        .social-link {
+            color: var(--faint);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+        }
+
+        .social-link:hover {
+            color: var(--gold);
+            transform: translateY(-3px);
+            filter: drop-shadow(0 0 8px rgba(212, 168, 83, 0.3));
+        }
+
+        .social-link svg {
+            width: 20px;
+            height: 20px;
+        }
+
         .hero-desc {
             font-size: 1rem;
             font-weight: 400;
@@ -970,6 +1005,16 @@
                 gap: 2.5rem;
             }
 
+            .hero-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .hero-socials {
+                padding-bottom: 0;
+            }
+
             .about-grid {
                 grid-template-columns: 1fr;
                 gap: 3rem;
@@ -1010,7 +1055,34 @@
         <div class="hero-copy">
             <div class="hero-rule"></div>
             <div class="hero-eyebrow">cs student &amp; ml engineer -- ontario, ca</div>
-            <h1 class="hero-name">William<br><span>Commu.</span></h1>
+            <div class="hero-header">
+                <h1 class="hero-name">William<br><span>Commu.</span></h1>
+                <div class="hero-socials">
+                    <a href="https://github.com/siqnole" class="social-link" target="_blank" aria-label="GitHub">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                        </svg>
+                    </a>
+                    <a href="https://codeberg.org/siq" class="social-link" target="_blank" aria-label="Codeberg">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </a>
+                    <a href="https://instagram.com/siqnole" class="social-link" target="_blank" aria-label="Instagram">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <a href="mailto:wcommu@proton.me" class="social-link" aria-label="Email">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                    </a>
+                </div>
+            </div>
             <p class="hero-desc">
                 I study computer science with a machine learning specialization and spend most of my time at the
                 intersection of

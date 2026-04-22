@@ -1,6 +1,24 @@
 {
   "books": [
     {
+      "title": "The Pursuit of Happyness",
+      "author": "Chris Gardner",
+      "imageUrl": "https://cdn.thestorygraph.com/ei6vnbxlgk59b5mv9xq79nsgakhq",
+      "bookUrl": "https://app.thestorygraph.com/books/9fc96e17-ad43-4333-bfb5-f455a07db68e"
+    },
+    {
+      "title": "Ivanhoe",
+      "author": "Walter Scott",
+      "imageUrl": "https://cdn.thestorygraph.com/cr41hm5oq67701oqqh3tvrocvi9y",
+      "bookUrl": "https://app.thestorygraph.com/books/ae47fcb8-13a9-4562-9ed6-3f8f1e2a0a14"
+    },
+    {
+      "title": "The End of Faith: Religion, Terror, and the Future of Reason",
+      "author": "Sam Harris",
+      "imageUrl": "https://cdn.thestorygraph.com/vzv522z144czz3ft36sa02purare",
+      "bookUrl": "https://app.thestorygraph.com/books/ace1e2fd-c70d-41a5-9c2d-b5e48035a557"
+    },
+    {
       "title": "Photography for the Joy of It",
       "author": "Freeman Patterson",
       "imageUrl": "https://cdn.thestorygraph.com/wlqp74r4r0zsbluierq8zkuxgmxr",

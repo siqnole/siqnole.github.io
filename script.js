@@ -79,6 +79,7 @@ const readingWidget = document.getElementById('reading-widget');
 const readingTitle = readingWidget.querySelector('.reading-title');
 const readingAuthor = readingWidget.querySelector('.reading-author');
 const readingArt = document.getElementById('reading-art');
+const readingArtFallback = document.getElementById('reading-art-fallback');
 
 let readingBooks = [];
 let currentBookIndex = 0;
@@ -87,6 +88,11 @@ let currentBookIndex = 0;
 musicArt.onerror = () => {
     musicArt.style.display = 'none';
     musicArtFallback.style.display = 'flex';
+};
+
+readingArt.onerror = () => {
+    readingArt.style.display = 'none';
+    if (readingArtFallback) readingArtFallback.style.display = 'flex';
 };
 
 async function updateMusic() {
@@ -143,6 +149,8 @@ function renderBook() {
     setTimeout(() => {
         readingTitle.innerText = book.title;
         readingAuthor.innerText = book.author;
+        readingArt.style.display = 'block';
+        if (readingArtFallback) readingArtFallback.style.display = 'none';
         readingArt.src = book.imageUrl;
         readingWidget.href = book.bookUrl;
         

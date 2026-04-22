@@ -49,7 +49,12 @@
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 <a id="reading-widget" class="status-widget" href="#" target="_blank" title="View on StoryGraph">
-                    <img id="reading-art" src="" class="status-art" alt="Book Cover" referrerpolicy="no-referrer">
+                    <div class="art-container">
+                        <img id="reading-art" src="" class="status-art" alt="Book Cover" referrerpolicy="no-referrer">
+                        <div id="reading-art-fallback" class="status-art-fallback">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                    </div>
                     <div class="status-info">
                         <span class="status-title reading-title">Loading...</span>
                         <span class="status-subtitle reading-author">Author</span>

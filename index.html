@@ -989,6 +989,157 @@
             transform: translateY(0);
         }
 
+        /* CONTACT MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(13, 12, 10, 0.82);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 520px;
+            padding: 3rem;
+            position: relative;
+            transform: translateY(30px) scale(0.96);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 4px;
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.45), 0 18px 36px -18px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--faint);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: var(--gold);
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-family: var(--serif);
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--gold);
+            letter-spacing: -0.01em;
+        }
+
+        .modal-subtitle {
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-transform: lowercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 2.4rem;
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .form-label {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--faint);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+        }
+
+        .form-input,
+        .form-textarea {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 1rem 1.2rem;
+            font-family: var(--body);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: var(--gold-dim);
+            background: rgba(45, 40, 30, 0.4);
+            box-shadow: 0 0 0 1px var(--gold-dim);
+        }
+
+        .form-textarea {
+            min-height: 140px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .submit-btn {
+            margin-top: 0.8rem;
+            justify-content: center;
+            background: var(--gold);
+            color: var(--bg);
+            font-weight: 600;
+            height: 52px;
+            letter-spacing: 0.1em;
+            text-transform: lowercase;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: var(--cream);
+            color: var(--bg);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-status {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            margin-top: 1.2rem;
+            text-align: center;
+            display: none;
+            letter-spacing: 0.05em;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 880px) {
             nav {
@@ -1882,11 +2033,104 @@
         </div>
     </footer>
 
+    <!-- CONTACT MODAL -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"></path>
+                </svg>
+            </button>
+            <h2 class="modal-title">Get in touch</h2>
+            <p class="modal-subtitle">Project query / collaboration / hello world</p>
+            
+            <form id="contactForm" class="contact-form">
+                <div class="form-group">
+                    <label class="form-label" for="name">Name</label>
+                    <input type="text" id="name" name="name" class="form-input" placeholder="Your name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="message">Message</label>
+                    <textarea id="message" name="message" class="form-textarea" placeholder="Tell me about your project..." required></textarea>
+                </div>
+                <button type="submit" id="submitBtn" class="btn submit-btn">
+                    Send Transmission
+                </button>
+                <div id="formStatus" class="form-status"></div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
         }, { threshold: 0.08 });
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Contact Modal Logic
+        const contactModal = document.getElementById('contactModal');
+        const contactBtn = document.querySelector('a[href="#contact"].btn-outline');
+        const closeModal = document.getElementById('closeModal');
+        const contactForm = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const formStatus = document.getElementById('formStatus');
+
+        if (contactBtn) {
+            contactBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                contactModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        const closeFunc = () => {
+            contactModal.classList.remove('active');
+            document.body.style.overflow = '';
+            formStatus.style.display = 'none';
+        };
+
+        closeModal.addEventListener('click', closeFunc);
+        contactModal.addEventListener('click', (e) => {
+            if (e.target === contactModal) closeFunc();
+        });
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const message = document.getElementById('message').value;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Sending...';
+            formStatus.style.display = 'block';
+            formStatus.style.color = 'var(--muted)';
+            formStatus.innerText = 'Transmitting sequence...';
+
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, message })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    formStatus.style.color = '#4ade80';
+                    formStatus.innerText = 'Transmission received. Talk soon.';
+                    contactForm.reset();
+                    setTimeout(closeFunc, 2000);
+                } else {
+                    throw new Error(result.error || 'Transmission failed.');
+                }
+            } catch (error) {
+                formStatus.style.color = '#f87171';
+                formStatus.innerText = error.message;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Send Transmission';
+            }
+        });
     </script>
 
 </body>

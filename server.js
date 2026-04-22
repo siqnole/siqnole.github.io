@@ -102,81 +102,17 @@ app.get("/api/now-playing", async (req, res) => {
 
 const fs = require('fs');
 
-// StoryGraph Reading Status Endpoint
-app.get("/api/reading", async (req, res) => {
+// StoryGraph Reading Status Endpoint (served from static file)
+app.get("/api/reading", (req, res) => {
   try {
-    const username = "siq";
-    const url = `https://app.thestorygraph.com/currently-reading/${username}`;
-    
-    // Use environment variable for cookie if available, otherwise read from local file
-    let cookieHeader = process.env.STORYGRAPH_COOKIE || "";
-    if (!cookieHeader) {
-      try {
-        if (fs.existsSync('cookies-app-thestorygraph-com.txt')) {
-          const cookieFile = fs.readFileSync('cookies-app-thestorygraph-com.txt', 'utf8');
-          const lines = cookieFile.split('\n');
-          const cookies = [];
-          for (const line of lines) {
-            if (!line || line.startsWith('#')) continue;
-            const parts = line.split('\t');
-            if (parts.length >= 7) {
-              cookies.push(`${parts[5]}=${parts[6]}`);
-            }
-          }
-          cookieHeader = cookies.join('; ');
-        }
-      } catch (err) {
-        console.warn("Cookie file reading failed, attempting without cookies:", err.message);
-      }
+    if (fs.existsSync('reading.json')) {
+      const data = fs.readFileSync('reading.json', 'utf8');
+      res.status(200).json(JSON.parse(data));
+    } else {
+      res.status(200).json({ isReading: false, books: [] });
     }
-
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Cookie': cookieHeader,
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none'
-      }
-    });
-    
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
-    const html = await response.text();
-    const $ = cheerio.load(html);
-    
-    const books = [];
-    const seenTitles = new Set();
-    
-    $(".book-pane-content").each((i, el) => {
-      // Find the specific title link that contains text
-      const titleEl = $(el).find("h3 a[href^='/books/']").first();
-      // Find the specific author link
-      const authorEl = $(el).find("a[href^='/authors/']").first();
-      // Find the specific cover art
-      const imageEl = $(el).find(".book-cover img").first();
-      
-      const title = titleEl.text().trim();
-      const author = authorEl.text().trim();
-      
-      if (title && author && !seenTitles.has(title)) {
-        seenTitles.add(title);
-        books.push({
-          title: title,
-          author: author,
-          imageUrl: imageEl.attr("src"),
-          bookUrl: `https://app.thestorygraph.com${titleEl.attr("href")}`
-        });
-      }
-    });
-
-    res.status(200).json({
-      books,
-      isReading: books.length > 0
-    });
   } catch (error) {
-    console.error("StoryGraph Scraper Error:", error);
+    console.error("Failed to read reading.json:", error);
     res.status(500).json({ error: "Failed to fetch reading status." });
   }
 });

@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const cheerio = require("cheerio");
 require("dotenv").config();
 
 const app = express();
@@ -59,91 +60,125 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
-// Spotify API helper functions
-let spotifyAccessToken = null;
-let spotifyTokenExpiry = 0;
-
-async function getSpotifyAccessToken() {
-  const currentTime = Date.now();
-  if (spotifyAccessToken && currentTime < spotifyTokenExpiry) {
-    return spotifyAccessToken;
-  }
-
-  const clientId = process.env.SPOTIFY_CLIENT_ID;
-  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-  const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
-
-  if (!clientId || !clientSecret || !refreshToken) {
-    console.error("Missing Spotify credentials in .env");
-    return null;
-  }
-
-  try {
-    const response = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: "Basic " + Buffer.from(clientId + ":" + clientSecret).toString("base64"),
-      },
-      body: new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: refreshToken,
-      }),
-    });
-
-    const data = await response.json();
-    if (data.access_token) {
-      spotifyAccessToken = data.access_token;
-      spotifyTokenExpiry = currentTime + data.expires_in * 1000 - 60000; // Expire 1 minute early
-      return spotifyAccessToken;
-    }
-  } catch (error) {
-    console.error("Error refreshing Spotify token:", error);
-  }
-  return null;
-}
-
-// Spotify Now Playing Endpoint
+// Last.fm Now Playing Endpoint
 app.get("/api/now-playing", async (req, res) => {
-  const token = await getSpotifyAccessToken();
-  if (!token) {
-    return res.status(500).json({ error: "Failed to authenticate with Spotify." });
+  const apiKey = process.env.LASTFM_API_KEY;
+  const username = process.env.LASTFM_USERNAME;
+
+  if (!apiKey || !username) {
+    console.error("Missing Last.fm credentials in .env");
+    return res.status(500).json({ error: "Server configuration error." });
   }
 
   try {
-    const response = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const url = `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json&limit=1`;
+    const response = await fetch(url);
+    const data = await response.json();
 
-    if (response.status === 204 || response.status > 400) {
+    if (!data.recenttracks || !data.recenttracks.track || data.recenttracks.track.length === 0) {
       return res.status(200).json({ isPlaying: false });
     }
 
-    const song = await response.json();
-    if (!song.track_window && !song.item) {
-        return res.status(200).json({ isPlaying: false });
+    const track = data.recenttracks.track[0];
+    const isPlaying = track["@attr"] && track["@attr"].nowplaying === "true";
+
+    if (!isPlaying) {
+      return res.status(200).json({ isPlaying: false });
     }
 
-    const isPlaying = song.is_playing;
-    const title = song.item.name;
-    const artist = song.item.artists.map((_artist) => _artist.name).join(", ");
-    const album = song.item.album.name;
-    const albumImageUrl = song.item.album.images[0].url;
-    const songUrl = song.item.external_urls.spotify;
-
     res.status(200).json({
-      album,
-      albumImageUrl,
-      artist,
-      isPlaying,
-      songUrl,
-      title,
+      title: track.name,
+      artist: track.artist["#text"],
+      album: track.album["#text"],
+      albumImageUrl: track.image[track.image.length - 1]["#text"], // Largest image
+      songUrl: track.url,
+      isPlaying: true,
     });
   } catch (error) {
-    console.error("Spotify API Error:", error);
+    console.error("Last.fm API Error:", error);
     res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+const fs = require('fs');
+
+// StoryGraph Reading Status Endpoint
+app.get("/api/reading", async (req, res) => {
+  try {
+    const username = "siq";
+    const url = `https://app.thestorygraph.com/currently-reading/${username}`;
+    
+    // Parse Netscape cookies from the provided file
+    let cookieHeader = "";
+    try {
+      if (fs.existsSync('cookies-app-thestorygraph-com.txt')) {
+        const cookieFile = fs.readFileSync('cookies-app-thestorygraph-com.txt', 'utf8');
+        const lines = cookieFile.split('\n');
+        const cookies = [];
+        for (const line of lines) {
+          if (!line || line.startsWith('#')) continue;
+          const parts = line.split('\t');
+          if (parts.length >= 7) {
+            cookies.push(`${parts[5]}=${parts[6]}`);
+          }
+        }
+        cookieHeader = cookies.join('; ');
+      }
+    } catch (err) {
+      console.warn("Cookie file reading failed, attempting without cookies:", err.message);
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Cookie': cookieHeader,
+        'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none'
+      }
+    });
+    
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    
+    const books = [];
+    const seenTitles = new Set();
+    
+    $(".book-pane-content").each((i, el) => {
+      // Find the specific title link that contains text
+      const titleEl = $(el).find("h3 a[href^='/books/']").first();
+      // Find the specific author link
+      const authorEl = $(el).find("a[href^='/authors/']").first();
+      // Find the specific cover art
+      const imageEl = $(el).find(".book-cover img").first();
+      
+      const title = titleEl.text().trim();
+      const author = authorEl.text().trim();
+      
+      if (title && author && !seenTitles.has(title)) {
+        seenTitles.add(title);
+        books.push({
+          title: title,
+          author: author,
+          imageUrl: imageEl.attr("src"),
+          bookUrl: `https://app.thestorygraph.com${titleEl.attr("href")}`
+        });
+      }
+    });
+
+    res.status(200).json({
+      books,
+      isReading: books.length > 0
+    });
+  } catch (error) {
+    console.error("StoryGraph Scraper Error:", error);
+    res.status(500).json({ error: "Failed to fetch reading status." });
   }
 });
 

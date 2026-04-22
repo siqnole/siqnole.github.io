@@ -10,6 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"
         rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --bg: #13120f;
@@ -108,87 +109,168 @@
             color: var(--gold);
         }
 
-        /* MUSIC WIDGET */
-        #music-widget {
+        /* STATUS WIDGETS (Music & Reading) */
+        #status-container {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+        }
+
+        .widget-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .status-widget {
             display: flex;
             align-items: center;
             gap: 0.8rem;
             padding: 0.4rem 0.8rem;
-            background: rgba(40, 35, 25, 0.4);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-family: var(--mono);
-            font-size: 0.65rem;
-            color: var(--muted);
-            transition: all 0.3s ease;
-            max-width: 280px;
-            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            backdrop-filter: blur(12px);
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             opacity: 0;
             transform: translateY(10px);
             pointer-events: none;
+            max-width: 220px;
+            position: relative;
         }
 
-        #music-widget.visible {
+        .status-widget.visible {
             opacity: 1;
             transform: translateY(0);
             pointer-events: all;
         }
 
-        #music-widget:hover {
-            border-color: var(--gold-dim);
-            background: rgba(40, 35, 25, 0.6);
+        .status-widget:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--gold);
+            transform: translateY(-2px);
         }
 
-        .music-album-art {
-            width: 24px;
-            height: 24px;
-            border-radius: 2px;
+        /* Art & Fallback */
+        .art-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .status-art {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
             object-fit: cover;
-            border: 1px solid var(--border2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.3s ease;
         }
 
-        .music-info {
+        .status-art-fallback {
+            display: none; /* Shown via JS if image fails */
+            width: 28px;
+            height: 28px;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface2);
+            border-radius: 4px;
+            color: var(--gold);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Reading Nav Buttons */
+        .reading-nav-btn {
+            background: none;
+            border: none;
+            color: var(--faint);
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .visible + .reading-nav-btn,
+        .reading-nav-btn:has(+ .visible) {
+             opacity: 0.5;
+             pointer-events: all;
+             transform: scale(1);
+        }
+
+        .reading-nav-btn:hover {
+            color: var(--gold);
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.1);
+        }
+
+        .status-info {
             display: flex;
             flex-direction: column;
-            gap: 1px;
             overflow: hidden;
+            line-height: 1.3;
+        }
+
+        .status-title {
+            font-family: var(--serif);
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text);
             white-space: nowrap;
-        }
-
-        .music-title {
-            color: var(--gold);
-            font-weight: 500;
-            text-overflow: ellipsis;
             overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .music-artist {
-            font-size: 0.6rem;
+        .status-subtitle {
+            font-family: var(--mono);
+            font-size: 0.62rem;
             color: var(--faint);
-            text-overflow: ellipsis;
+            white-space: nowrap;
             overflow: hidden;
+            text-overflow: ellipsis;
         }
 
+        /* Music Specific */
         .music-bars {
             display: flex;
             align-items: flex-end;
             gap: 2px;
             height: 10px;
-            margin-left: auto;
+            margin-right: 4px;
         }
 
         .bar {
             width: 2px;
             background: var(--gold);
-            animation: musicBars 0.8s ease-in-out infinite alternate;
+            animation: bounce 0.8s ease-in-out infinite alternate;
         }
 
-        .bar:nth-child(2) { animation-delay: 0.2s; animation-duration: 0.6s; }
-        .bar:nth-child(3) { animation-delay: 0.4s; animation-duration: 0.9s; }
+        /* Reading Specific */
+        #reading-widget .status-art {
+            width: 24px;
+            height: 34px;
+            border-radius: 2px;
+        }
 
-        @keyframes musicBars {
+        @keyframes bounce {
             0% { height: 2px; }
             100% { height: 10px; }
+        }
+
+        @media (max-width: 1100px) {
+            #status-container {
+                display: none;
+            }
         }
 
         /* HERO */
@@ -1276,20 +1358,47 @@
     <!-- NAV -->
     <nav>
         <a href="#hero" class="nav-logo">William Commu</a>
+        <div id="status-container">
+            <!-- Now Playing Widget -->
+            <div id="music-widget-wrapper" class="widget-wrapper">
+                <a id="music-widget" class="status-widget" href="#" target="_blank" title="View on Last.fm">
+                    <div class="art-container">
+                        <img id="music-art" src="" class="status-art" alt="Album Art">
+                        <div id="music-art-fallback" class="status-art-fallback">
+                            <i class="fa-solid fa-compact-disc fa-spin"></i>
+                        </div>
+                    </div>
+                    <div class="status-info">
+                        <span class="status-title music-title">Loading...</span>
+                        <div style="display: flex; align-items: center;">
+                            <div class="music-bars">
+                                <div class="bar" style="animation-delay: -0.2s"></div>
+                                <div class="bar" style="animation-delay: -0.1s"></div>
+                                <div class="bar" style="animation-delay: -0.3s"></div>
+                            </div>
+                            <span class="status-subtitle music-artist">Artist</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
 
-        <!-- Spotify Now Playing -->
-        <a id="music-widget" href="#" target="_blank">
-            <img src="" class="music-album-art" alt="Album Art">
-            <div class="music-info">
-                <span class="music-title">Loading...</span>
-                <span class="music-artist">Spotify</span>
+            <!-- Currently Reading Widget -->
+            <div id="reading-widget-wrapper" class="widget-wrapper">
+                <button class="reading-nav-btn prev" onclick="changeBook(-1)" title="Previous Book">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <a id="reading-widget" class="status-widget" href="#" target="_blank" title="View on StoryGraph">
+                    <img id="reading-art" src="" class="status-art" alt="Book Cover">
+                    <div class="status-info">
+                        <span class="status-title reading-title">Loading...</span>
+                        <span class="status-subtitle reading-author">Author</span>
+                    </div>
+                </a>
+                <button class="reading-nav-btn next" onclick="changeBook(1)" title="Next Book">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
             </div>
-            <div class="music-bars">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-        </a>
+        </div>
 
         <ul class="nav-links">
             <li><a href="#about">about</a></li>
@@ -2230,11 +2339,26 @@
             }
         });
 
-        // Spotify Music Widget Refresh
+        // Status Widgets Refresh (Music & Reading)
         const musicWidget = document.getElementById('music-widget');
         const musicTitle = musicWidget.querySelector('.music-title');
         const musicArtist = musicWidget.querySelector('.music-artist');
-        const musicArt = musicWidget.querySelector('.music-album-art');
+        const musicArt = document.getElementById('music-art');
+        const musicArtFallback = document.getElementById('music-art-fallback');
+
+        const readingWidget = document.getElementById('reading-widget');
+        const readingTitle = readingWidget.querySelector('.reading-title');
+        const readingAuthor = readingWidget.querySelector('.reading-author');
+        const readingArt = document.getElementById('reading-art');
+
+        let readingBooks = [];
+        let currentBookIndex = 0;
+
+        // Image error handling
+        musicArt.onerror = () => {
+            musicArt.style.display = 'none';
+            musicArtFallback.style.display = 'flex';
+        };
 
         async function updateMusic() {
             try {
@@ -2244,8 +2368,13 @@
                 if (data.isPlaying) {
                     musicTitle.innerText = data.title;
                     musicArtist.innerText = data.artist;
-                    musicArt.src = data.albumImageUrl;
                     musicWidget.href = data.songUrl;
+                    
+                    // Reset art state
+                    musicArt.style.display = 'block';
+                    musicArtFallback.style.display = 'none';
+                    musicArt.src = data.albumImageUrl;
+                    
                     musicWidget.classList.add('visible');
                 } else {
                     musicWidget.classList.remove('visible');
@@ -2256,9 +2385,56 @@
             }
         }
 
-        // Initial fetch and poll every 45 seconds
+        async function updateReading() {
+            try {
+                const res = await fetch('/api/reading');
+                const data = await res.json();
+
+                if (data.isReading && data.books.length > 0) {
+                    readingBooks = data.books;
+                    renderBook();
+                    readingWidget.classList.add('visible');
+                } else {
+                    readingWidget.classList.remove('visible');
+                }
+            } catch (err) {
+                console.error('Reading update error:', err);
+                readingWidget.classList.remove('visible');
+            }
+        }
+
+        function renderBook() {
+            if (readingBooks.length === 0) return;
+            const book = readingBooks[currentBookIndex];
+            
+            // Subtle transition
+            readingWidget.style.opacity = '0.4';
+            readingWidget.style.transform = 'translateY(5px)';
+            
+            setTimeout(() => {
+                readingTitle.innerText = book.title;
+                readingAuthor.innerText = book.author;
+                readingArt.src = book.imageUrl;
+                readingWidget.href = book.bookUrl;
+                
+                readingWidget.style.opacity = '1';
+                readingWidget.style.transform = 'translateY(0)';
+            }, 300);
+        }
+
+        function changeBook(direction) {
+            if (readingBooks.length <= 1) return;
+            currentBookIndex = (currentBookIndex + direction + readingBooks.length) % readingBooks.length;
+            renderBook();
+        }
+
+        // Initial fetch
         updateMusic();
+        updateReading();
+
+        // Poll Music every 45s, Reading every 10 minutes
         setInterval(updateMusic, 45000);
+        setInterval(updateReading, 600000);
     </script>
 
 </body>

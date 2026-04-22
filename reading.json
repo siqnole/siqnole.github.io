@@ -1,0 +1,29 @@
+{
+  "books": [
+    {
+      "title": "Photography for the Joy of It",
+      "author": "Freeman Patterson",
+      "imageUrl": "https://cdn.thestorygraph.com/wlqp74r4r0zsbluierq8zkuxgmxr",
+      "bookUrl": "https://app.thestorygraph.com/books/982e75ed-d585-4460-bb6f-7ddac098ef72"
+    },
+    {
+      "title": "Representations of the Intellectual",
+      "author": "Edward W. Said",
+      "imageUrl": "https://cdn.thestorygraph.com/akmij6q5gzcxu2anfavmt9flxzo0",
+      "bookUrl": "https://app.thestorygraph.com/books/f9487944-2b66-40a0-aab9-23bb9718ef4e"
+    },
+    {
+      "title": "Italian Immigrant Cooking",
+      "author": "Elodia Rigante",
+      "imageUrl": "https://cdn.thestorygraph.com/k9bynv3evph6kuu9j777dr6jvtfj",
+      "bookUrl": "https://app.thestorygraph.com/books/76a3e262-cd00-41d9-a5ff-97b6ac7f33a0"
+    },
+    {
+      "title": "No god but God: The Origins, Evolution and Future of Islam",
+      "author": "Reza Aslan",
+      "imageUrl": "https://cdn.thestorygraph.com/99gihhdtb7pyumaufunwjz1dr3ul",
+      "bookUrl": "https://app.thestorygraph.com/books/27cb3f11-77c6-4eca-9344-d64885e6f1c4"
+    }
+  ],
+  "isReading": true
+}

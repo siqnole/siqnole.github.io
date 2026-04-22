@@ -172,3 +172,24 @@ updateReading();
 // Poll Music every 45s, Reading every 10 minutes
 setInterval(updateMusic, 45000);
 setInterval(updateReading, 600000);
+
+// Mobile Widget Tap Logic
+document.querySelectorAll('.status-widget').forEach(widget => {
+    widget.addEventListener('click', (e) => {
+        if (window.innerWidth > 1100) return; // Desktop works natively
+        
+        if (!widget.classList.contains('mobile-expanded')) {
+            e.preventDefault();
+            // Collapse any other open widget
+            document.querySelectorAll('.status-widget.mobile-expanded').forEach(w => w.classList.remove('mobile-expanded'));
+            widget.classList.add('mobile-expanded');
+        }
+    });
+});
+
+// Close tooltips when tapping elsewhere on mobile
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 1100 && !e.target.closest('.status-widget')) {
+        document.querySelectorAll('.status-widget.mobile-expanded').forEach(w => w.classList.remove('mobile-expanded'));
+    }
+});

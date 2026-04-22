@@ -106,39 +106,13 @@ const fs = require('fs');
 app.get("/api/reading", async (req, res) => {
   try {
     const username = "siq";
-    const url = `https://app.thestorygraph.com/currently-reading/${username}`;
+    // We use allOrigins proxy to bypass Cloudflare's strict datacenter blocking on Render.
+    // Since the profile is public, using a proxy completely removes the need for managing expiring session cookies.
+    const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://app.thestorygraph.com/currently-reading/${username}`)}`;
     
-    // Parse Netscape cookies from the provided file
-    let cookieHeader = "";
-    try {
-      if (fs.existsSync('cookies-app-thestorygraph-com.txt')) {
-        const cookieFile = fs.readFileSync('cookies-app-thestorygraph-com.txt', 'utf8');
-        const lines = cookieFile.split('\n');
-        const cookies = [];
-        for (const line of lines) {
-          if (!line || line.startsWith('#')) continue;
-          const parts = line.split('\t');
-          if (parts.length >= 7) {
-            cookies.push(`${parts[5]}=${parts[6]}`);
-          }
-        }
-        cookieHeader = cookies.join('; ');
-      }
-    } catch (err) {
-      console.warn("Cookie file reading failed, attempting without cookies:", err.message);
-    }
-
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Cookie': cookieHeader,
-        'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
       }
     });
     

@@ -2,12 +2,24 @@ const express = require("express");
 const path = require("path");
 const cheerio = require("cheerio");
 require("dotenv").config();
+const { renderW3mPage } = require("./w3m");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+app.get("/", (req, res, next) => {
+  res.vary("User-Agent");
+
+  if (!/\bw3m(?:\/|$)/i.test(req.get("user-agent") || "")) {
+    return next();
+  }
+
+  const projectId = typeof req.query.project === "string" ? req.query.project : undefined;
+  res.type("html").send(renderW3mPage(projectId));
+});
 
 // Serve static files from the current directory
 app.use(express.static(__dirname));
